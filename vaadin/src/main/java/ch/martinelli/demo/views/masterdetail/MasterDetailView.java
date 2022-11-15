@@ -3,7 +3,6 @@ package ch.martinelli.demo.views.masterdetail;
 import ch.martinelli.demo.entity.SamplePerson;
 import ch.martinelli.demo.service.SamplePersonService;
 import ch.martinelli.demo.views.MainLayout;
-import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
@@ -20,7 +19,7 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.splitlayout.SplitLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.BeanValidationBinder;
-import com.vaadin.flow.data.binder.ValidationException;
+import com.vaadin.flow.data.binder.BinderValidationStatus;
 import com.vaadin.flow.data.renderer.LitRenderer;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
@@ -40,23 +39,14 @@ import java.util.UUID;
 @Uses(Icon.class)
 public class MasterDetailView extends Div implements BeforeEnterObserver {
 
-    private final String SAMPLEPERSON_ID = "samplePersonID";
     private final String SAMPLEPERSON_EDIT_ROUTE_TEMPLATE = "master-detail/%s/edit";
 
-    private Grid<SamplePerson> grid = new Grid<>(SamplePerson.class, false);
+    private final Grid<SamplePerson> grid = new Grid<>(SamplePerson.class, false);
 
-    private TextField firstName;
-    private TextField lastName;
-    private TextField email;
-    private TextField phone;
-    private DatePicker dateOfBirth;
-    private TextField occupation;
-    private Checkbox important;
+    private final Button cancel = new Button("Cancel");
+    private final Button save = new Button("Save");
 
-    private Button cancel = new Button("Cancel");
-    private Button save = new Button("Save");
-
-    private BeanValidationBinder<SamplePerson> binder;
+    private final BeanValidationBinder<SamplePerson> binder = new BeanValidationBinder<>(SamplePerson.class);
 
     private SamplePerson samplePerson;
 
@@ -65,9 +55,9 @@ public class MasterDetailView extends Div implements BeforeEnterObserver {
     @Autowired
     public MasterDetailView(SamplePersonService samplePersonService) {
         this.samplePersonService = samplePersonService;
+
         addClassNames("master-detail-view");
 
-        // Create UI
         SplitLayout splitLayout = new SplitLayout();
 
         createGridLayout(splitLayout);
@@ -75,7 +65,6 @@ public class MasterDetailView extends Div implements BeforeEnterObserver {
 
         add(splitLayout);
 
-        // Configure Grid
         grid.addColumn("firstName").setAutoWidth(true);
         grid.addColumn("lastName").setAutoWidth(true);
         grid.addColumn("email").setAutoWidth(true);
@@ -83,7 +72,7 @@ public class MasterDetailView extends Div implements BeforeEnterObserver {
         grid.addColumn("dateOfBirth").setAutoWidth(true);
         grid.addColumn("occupation").setAutoWidth(true);
         LitRenderer<SamplePerson> importantRenderer = LitRenderer.<SamplePerson>of(
-                "<vaadin-icon icon='vaadin:${item.icon}' style='width: var(--lumo-icon-size-s); height: var(--lumo-icon-size-s); color: ${item.color};'></vaadin-icon>")
+                        "<vaadin-icon icon='vaadin:${item.icon}' style='width: var(--lumo-icon-size-s); height: var(--lumo-icon-size-s); color: ${item.color};'></vaadin-icon>")
                 .withProperty("icon", important -> important.isImportant() ? "check" : "minus").withProperty("color",
                         important -> important.isImportant()
                                 ? "var(--lumo-primary-text-color)"
@@ -92,7 +81,7 @@ public class MasterDetailView extends Div implements BeforeEnterObserver {
         grid.addColumn(importantRenderer).setHeader("Important").setAutoWidth(true);
 
         grid.setItems(query -> samplePersonService.list(
-                PageRequest.of(query.getPage(), query.getPageSize(), VaadinSpringDataHelpers.toSpringDataSort(query)))
+                        PageRequest.of(query.getPage(), query.getPageSize(), VaadinSpringDataHelpers.toSpringDataSort(query)))
                 .stream());
         grid.addThemeVariants(GridVariant.LUMO_NO_BORDER);
 
@@ -106,31 +95,25 @@ public class MasterDetailView extends Div implements BeforeEnterObserver {
             }
         });
 
-        // Configure Form
-        binder = new BeanValidationBinder<>(SamplePerson.class);
-
-        // Bind fields. This is where you'd define e.g. validation rules
-
-        binder.bindInstanceFields(this);
-
         cancel.addClickListener(e -> {
             clearForm();
             refreshGrid();
         });
 
         save.addClickListener(e -> {
-            try {
-                if (this.samplePerson == null) {
-                    this.samplePerson = new SamplePerson();
-                }
-                binder.writeBean(this.samplePerson);
+            BinderValidationStatus<SamplePerson> validate = binder.validate();
+            if (validate.isOk()) {
                 samplePersonService.update(this.samplePerson);
+
                 clearForm();
                 refreshGrid();
+
                 Notification.show("SamplePerson details stored.");
+
+                this.samplePerson = new SamplePerson();
+                binder.setBean(this.samplePerson);
+
                 UI.getCurrent().navigate(MasterDetailView.class);
-            } catch (ValidationException validationException) {
-                Notification.show("An exception happened while trying to store the samplePerson details.");
             }
         });
 
@@ -138,7 +121,7 @@ public class MasterDetailView extends Div implements BeforeEnterObserver {
 
     @Override
     public void beforeEnter(BeforeEnterEvent event) {
-        Optional<UUID> samplePersonId = event.getRouteParameters().get(SAMPLEPERSON_ID).map(UUID::fromString);
+        Optional<UUID> samplePersonId = event.getRouteParameters().get("samplePersonID").map(UUID::fromString);
         if (samplePersonId.isPresent()) {
             Optional<SamplePerson> samplePersonFromBackend = samplePersonService.get(samplePersonId.get());
             if (samplePersonFromBackend.isPresent()) {
@@ -164,16 +147,23 @@ public class MasterDetailView extends Div implements BeforeEnterObserver {
         editorLayoutDiv.add(editorDiv);
 
         FormLayout formLayout = new FormLayout();
-        firstName = new TextField("First Name");
-        lastName = new TextField("Last Name");
-        email = new TextField("Email");
-        phone = new TextField("Phone");
-        dateOfBirth = new DatePicker("Date Of Birth");
-        occupation = new TextField("Occupation");
-        important = new Checkbox("Important");
-        Component[] fields = new Component[]{firstName, lastName, email, phone, dateOfBirth, occupation, important};
 
-        formLayout.add(fields);
+        TextField firstName = new TextField("First Name");
+        binder.forField(firstName).bind("firstName");
+        TextField lastName = new TextField("Last Name");
+        binder.forField(lastName).bind("lastName");
+        TextField email = new TextField("Email");
+        binder.forField(email).bind("email");
+        TextField phone = new TextField("Phone");
+        binder.forField(phone).bind("phone");
+        DatePicker dateOfBirth = new DatePicker("Date Of Birth");
+        binder.forField(dateOfBirth).bind("dateOfBirth");
+        TextField occupation = new TextField("Occupation");
+        binder.forField(occupation).bind("occupation");
+        Checkbox important = new Checkbox("Important");
+        binder.forField(important).bind("important");
+
+        formLayout.add(firstName, lastName, email, phone, dateOfBirth, occupation, important);
         editorDiv.add(formLayout);
         createButtonLayout(editorLayoutDiv);
 
@@ -207,7 +197,6 @@ public class MasterDetailView extends Div implements BeforeEnterObserver {
 
     private void populateForm(SamplePerson value) {
         this.samplePerson = value;
-        binder.readBean(this.samplePerson);
-
+        binder.setBean(this.samplePerson);
     }
 }

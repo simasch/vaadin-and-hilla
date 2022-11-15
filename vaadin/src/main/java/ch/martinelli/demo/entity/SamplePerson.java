@@ -5,6 +5,8 @@ import org.hibernate.annotations.Type;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.validation.constraints.Email;
+import javax.validation.constraints.NotBlank;
 import java.time.LocalDate;
 import java.util.UUID;
 
@@ -15,11 +17,17 @@ public class SamplePerson {
     @GeneratedValue
     @Type(type = "uuid-char")
     private UUID id;
+    @NotBlank
     private String firstName;
+    @NotBlank
     private String lastName;
+    @Email
+    @NotBlank
     private String email;
+    @NotBlank
     private String phone;
     private LocalDate dateOfBirth;
+    @NotBlank
     private String occupation;
     private boolean important;
 
