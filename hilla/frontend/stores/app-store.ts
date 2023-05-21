@@ -1,8 +1,5 @@
 import {RouterLocation} from '@vaadin/router';
-import {UserEndpoint} from 'Frontend/generated/endpoints';
 import {makeAutoObservable} from 'mobx';
-import Role from 'Frontend/generated/ch/martinelli/demo/Role';
-import User from 'Frontend/generated/ch/martinelli/demo/entity/User';
 
 export class AppStore {
   applicationName = 'Hilla';
@@ -11,8 +8,6 @@ export class AppStore {
   location = '';
 
   currentViewTitle = '';
-
-  user: User | undefined = undefined;
 
   constructor() {
     makeAutoObservable(this);
@@ -32,22 +27,6 @@ export class AppStore {
     } else {
       this.currentViewTitle = (location?.route as any)?.title || '';
     }
-  }
-
-  async fetchUserInfo() {
-    this.user = await UserEndpoint.getAuthenticatedUser();
-  }
-
-  clearUserInfo() {
-    this.user = undefined;
-  }
-
-  get loggedIn() {
-    return !!this.user;
-  }
-
-  isUserInRole(role: Role) {
-    return this.user?.roles?.includes(role);
   }
 }
 

@@ -3,8 +3,6 @@ package ch.martinelli.demo.components.appnav;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.JsModule;
-import com.vaadin.flow.component.html.Span;
-import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.StateTree;
 import com.vaadin.flow.router.RouteConfiguration;
@@ -70,7 +68,7 @@ public class AppNavItem extends Component {
      * @param icon
      *            the icon for the item
      */
-    public AppNavItem(String label, String path, Icon icon) {
+    public AppNavItem(String label, String path, Component icon) {
         setPath(path);
         setLabel(label);
         setIcon(icon);
@@ -86,46 +84,10 @@ public class AppNavItem extends Component {
      * @param icon
      *            the icon for the item
      */
-    public AppNavItem(String label, Class<? extends Component> view, Icon icon) {
+    public AppNavItem(String label, Class<? extends Component> view, Component icon) {
         setPath(view);
         setLabel(label);
         setIcon(icon);
-    }
-
-    /**
-     * Creates a new menu item using the given label and icon that links to the
-     * given path.
-     * 
-     * @param label
-     *            the label for the item
-     * @param path
-     *            the path to link to
-     * @param iconClass
-     *            the CSS class to use for showing the icon
-     */
-    public AppNavItem(String label, String path, String iconClass) {
-        setPath(path);
-        setLabel(label);
-
-        setIconClass(iconClass);
-    }
-
-    /**
-     * Creates a new menu item using the given label and icon that links to the
-     * given path.
-     * 
-     * @param label
-     *            the label for the item
-     * @param view
-     *            the view to link to
-     * @param iconClass
-     *            the CSS class to use for showing the icon
-     */
-    public AppNavItem(String label, Class<? extends Component> view, String iconClass) {
-        setPath(view);
-        setLabel(label);
-
-        setIconClass(iconClass);
     }
 
     /**
@@ -282,18 +244,18 @@ public class AppNavItem extends Component {
     }
 
     /**
-     * Sets the icon using a CSS class for the item.
-     * <p>
-     * Can also be used to set a custom component to be shown in front of the label.
-     * 
-     * @param iconClass
-     *            the CSS class to use for showing the icon
-     * @return this instance for chaining
+     * Sets the expanded status of the item.
+     *
+     * @param value
+     *            true to expand the item, false to collapse it
      */
-    public AppNavItem setIconClass(String iconClass) {
-        Span icon = new Span();
-        icon.setClassName(iconClass);
-        setIcon(icon);
+    public AppNavItem setExpanded(boolean value) {
+        if (value) {
+            getElement().setAttribute("expanded", "");
+        } else {
+            getElement().removeAttribute("expanded");
+        }
         return this;
     }
+
 }

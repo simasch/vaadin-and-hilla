@@ -1,11 +1,15 @@
 package ch.martinelli.demo;
 
-import com.vaadin.flow.component.dependency.NpmPackage;
+import ch.martinelli.demo.data.service.PersonRepository;
 import com.vaadin.flow.component.page.AppShellConfigurator;
-import com.vaadin.flow.server.PWA;
 import com.vaadin.flow.theme.Theme;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.sql.init.SqlDataSourceScriptDatabaseInitializer;
+import org.springframework.boot.autoconfigure.sql.init.SqlInitializationProperties;
+import org.springframework.context.annotation.Bean;
+
+import javax.sql.DataSource;
 
 /**
  * The entry point of the Spring Boot application.
@@ -16,13 +20,24 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
  */
 @SpringBootApplication
 @Theme(value = "vaadin")
-@PWA(name = "Vaadin", shortName = "Vaadin", offlineResources = {})
-@NpmPackage(value = "line-awesome", version = "1.3.0")
-@NpmPackage(value = "@vaadin-component-factory/vcf-nav", version = "1.0.6")
 public class VaadinApplication implements AppShellConfigurator {
 
     public static void main(String[] args) {
         SpringApplication.run(VaadinApplication.class, args);
     }
 
+    @Bean
+    SqlDataSourceScriptDatabaseInitializer dataSourceScriptDatabaseInitializer(DataSource dataSource,
+            SqlInitializationProperties properties, PersonRepository repository) {
+        // This bean ensures the database is only initialized when empty
+        return new SqlDataSourceScriptDatabaseInitializer(dataSource, properties) {
+            @Override
+            public boolean initializeDatabase() {
+                if (repository.count() == 0L) {
+                    return super.initializeDatabase();
+                }
+                return false;
+            }
+        };
+    }
 }

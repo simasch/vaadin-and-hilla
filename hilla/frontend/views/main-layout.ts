@@ -2,24 +2,19 @@ import '@vaadin-component-factory/vcf-nav';
 import '@vaadin/app-layout';
 import {AppLayout} from '@vaadin/app-layout';
 import '@vaadin/app-layout/vaadin-drawer-toggle';
-import '@vaadin/avatar/vaadin-avatar';
+import '@vaadin/avatar';
 import '@vaadin/icon';
 import '@vaadin/menu-bar';
-import {MenuBarItem, MenuBarItemSelectedEvent} from '@vaadin/menu-bar';
 import '@vaadin/scroller';
 import '@vaadin/tabs';
 import '@vaadin/tabs/vaadin-tab';
 import '@vaadin/vaadin-lumo-styles/vaadin-iconset';
-import {imageDataUrl} from 'Frontend/util';
-import {html, render} from 'lit';
+import {html} from 'lit';
 import {customElement} from 'lit/decorators.js';
-import {until} from 'lit/directives/until.js';
-import {logout} from '../auth';
-import {router} from '../index';
-import {hasAccess, views} from '../routes';
-import {appStore} from '../stores/app-store';
-import {Layout} from './view';
-import User from 'Frontend/generated/ch/martinelli/demo/entity/User';
+import {router} from '../index.js';
+import {views} from '../routes.js';
+import {appStore} from '../stores/app-store.js';
+import {Layout} from './view.js';
 
 interface RouteInfo {
   path: string;
@@ -42,7 +37,12 @@ export class MainLayout extends Layout {
             ${this.getMenuRoutes().map(
               (viewRoute) => html`
                 <vcf-nav-item path=${router.urlForPath(viewRoute.path)}>
-                  <span class="${viewRoute.icon} nav-item-icon" slot="prefix" aria-hidden="true"></span>
+                  <span
+                    class="navicon"
+                    style="--mask-image: url('line-awesome/svg/${viewRoute.icon}.svg')"
+                    slot="prefix"
+                    aria-hidden="true"
+                  ></span>
                   ${viewRoute.title}
                 </vcf-nav-item>
               `
@@ -50,17 +50,7 @@ export class MainLayout extends Layout {
           </vcf-nav>
         </vaadin-scroller>
 
-        <footer slot="drawer">
-          ${appStore.user
-            ? html`
-                <vaadin-menu-bar
-                  theme="tertiary-inline contrast"
-                  .items="${this.getUserMenuItems(appStore.user)}"
-                  @item-selected="${this.userMenuItemSelected}"
-                ></vaadin-menu-bar>
-              `
-            : html`<a router-ignore href="login">Sign in</a>`}
-        </footer>
+        <footer slot="drawer"></footer>
 
         <vaadin-drawer-toggle slot="navbar" aria-label="Menu toggle"></vaadin-drawer-toggle>
         <h2 slot="navbar" class="text-l m-0">${appStore.currentViewTitle}</h2>
@@ -81,43 +71,7 @@ export class MainLayout extends Layout {
     );
   }
 
-  private getUserMenuItems(user: User): MenuBarItem[] {
-    return [
-      {
-        component: this.createUserMenuItem(user),
-        children: [{ text: 'Sign out' }],
-      },
-    ];
-  }
-
-  private createUserMenuItem(user: User) {
-    const item = document.createElement('div');
-    item.style.display = 'flex';
-    item.style.alignItems = 'center';
-    item.style.gap = 'var(--lumo-space-s)';
-    render(
-      html`
-        <vaadin-avatar
-          theme="xsmall"
-          img="${until(imageDataUrl(user.profilePicture))}"
-          name="${user.name}"
-          tabindex="-1"
-        ></vaadin-avatar>
-        <span>${user.name}</span>
-        <vaadin-icon icon="lumo:dropdown"></vaadin-icon>
-      `,
-      item
-    );
-    return item;
-  }
-
-  private userMenuItemSelected(e: MenuBarItemSelectedEvent) {
-    if (e.detail.value.text === 'Sign out') {
-      logout();
-    }
-  }
-
   private getMenuRoutes(): RouteInfo[] {
-    return views.filter((route) => route.title).filter((route) => hasAccess(route)) as RouteInfo[];
+    return views.filter((route) => route.title) as RouteInfo[];
   }
 }

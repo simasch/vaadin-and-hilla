@@ -2,10 +2,10 @@ import '@vaadin/button';
 import '@vaadin/notification';
 import {Notification} from '@vaadin/notification';
 import '@vaadin/text-field';
-import * as HelloWorldEndpoint from 'Frontend/generated/HelloWorldEndpoint';
+import * as HelloWorldEndpoint from 'Frontend/generated/HelloWorldEndpoint.js';
 import {html} from 'lit';
 import {customElement} from 'lit/decorators.js';
-import {View} from '../../views/view';
+import {View} from '../../views/view.js';
 
 @customElement('hello-world-view')
 export class HelloWorldView extends View {

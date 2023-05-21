@@ -5,7 +5,7 @@ import '@vaadin/date-picker';
 import '@vaadin/date-time-picker';
 import '@vaadin/form-layout';
 import '@vaadin/grid';
-import {Grid, GridDataProviderCallback, GridDataProviderParams} from '@vaadin/grid';
+import type {Grid, GridDataProviderCallback, GridDataProviderParams} from '@vaadin/grid';
 import {columnBodyRenderer} from '@vaadin/grid/lit';
 import '@vaadin/grid/vaadin-grid-sort-column';
 import '@vaadin/horizontal-layout';
@@ -17,15 +17,14 @@ import '@vaadin/polymer-legacy-adapter';
 import '@vaadin/split-layout';
 import '@vaadin/text-field';
 import '@vaadin/upload';
-import '@vaadin/vaadin-icons';
-import Sort from 'Frontend/generated/dev/hilla/mappedtypes/Sort';
-import Direction from 'Frontend/generated/org/springframework/data/domain/Sort/Direction';
-import * as SamplePersonEndpoint from 'Frontend/generated/SamplePersonEndpoint';
+import type Sort from 'Frontend/generated/dev/hilla/mappedtypes/Sort.js';
+import Direction from 'Frontend/generated/org/springframework/data/domain/Sort/Direction.js';
+import * as PersonEndpoint from 'Frontend/generated/PersonEndpoint';
 import {html} from 'lit';
 import {customElement, property, query} from 'lit/decorators.js';
-import {View} from '../view';
-import SamplePersonModel from 'Frontend/generated/ch/martinelli/demo/entity/SamplePersonModel';
-import SamplePerson from 'Frontend/generated/ch/martinelli/demo/entity/SamplePerson';
+import {View} from '../view.js';
+import Person from "Frontend/generated/ch/martinelli/demo/data/entity/Person";
+import PersonModel from "Frontend/generated/ch/martinelli/demo/data/entity/PersonModel";
 
 @customElement('master-detail-view')
 export class MasterDetailView extends View {
@@ -37,7 +36,7 @@ export class MasterDetailView extends View {
 
   private gridDataProvider = this.getGridData.bind(this);
 
-  private binder = new Binder<SamplePerson, SamplePersonModel>(this, SamplePersonModel);
+  private binder = new Binder<Person, PersonModel>(this, PersonModel);
 
   render() {
     return html`
@@ -56,10 +55,11 @@ export class MasterDetailView extends View {
             <vaadin-grid-sort-column path="phone" auto-width></vaadin-grid-sort-column>
             <vaadin-grid-sort-column path="dateOfBirth" auto-width></vaadin-grid-sort-column>
             <vaadin-grid-sort-column path="occupation" auto-width></vaadin-grid-sort-column>
+            <vaadin-grid-sort-column path="role" auto-width></vaadin-grid-sort-column>
             <vaadin-grid-column
               path="important"
               auto-width
-              ${columnBodyRenderer<SamplePerson>((item) =>
+              ${columnBodyRenderer<Person>((item) =>
                 item.important
                   ? html`<vaadin-icon
                       icon="vaadin:check"
@@ -100,6 +100,7 @@ export class MasterDetailView extends View {
                 id="occupation"
                 ${field(this.binder.model.occupation)}
               ></vaadin-text-field
+              ><vaadin-text-field label="Role" id="role" ${field(this.binder.model.role)}></vaadin-text-field
               ><vaadin-checkbox id="important" ${field(this.binder.model.important)} label="Important"></vaadin-checkbox
             ></vaadin-form-layout>
           </div>
@@ -113,8 +114,8 @@ export class MasterDetailView extends View {
   }
 
   private async getGridData(
-    params: GridDataProviderParams<SamplePerson>,
-    callback: GridDataProviderCallback<SamplePerson | undefined>
+    params: GridDataProviderParams<Person>,
+    callback: GridDataProviderCallback<Person | undefined>
   ) {
     const sort: Sort = {
       orders: params.sortOrders.map((order) => ({
@@ -123,21 +124,21 @@ export class MasterDetailView extends View {
         ignoreCase: false,
       })),
     };
-    const data = await SamplePersonEndpoint.list({ pageNumber: params.page, pageSize: params.pageSize, sort });
+    const data = await PersonEndpoint.list({ pageNumber: params.page, pageSize: params.pageSize, sort });
     callback(data);
   }
 
   async connectedCallback() {
     super.connectedCallback();
-    this.gridSize = (await SamplePersonEndpoint.count()) ?? 0;
+    this.gridSize = (await PersonEndpoint.count()) ?? 0;
   }
 
   private async itemSelected(event: CustomEvent) {
-    const item: SamplePerson = event.detail.value as SamplePerson;
+    const item: Person = event.detail.value as Person;
     this.grid.selectedItems = item ? [item] : [];
 
     if (item) {
-      const fromBackend = await SamplePersonEndpoint.get(item.id!);
+      const fromBackend = await PersonEndpoint.get(item.id!);
       fromBackend ? this.binder.read(fromBackend) : this.refreshGrid();
     } else {
       this.clearForm();
@@ -147,14 +148,14 @@ export class MasterDetailView extends View {
   private async save() {
     try {
       const isNew = !this.binder.value.id;
-      await this.binder.submitTo(SamplePersonEndpoint.update);
+      await this.binder.submitTo(PersonEndpoint.update);
       if (isNew) {
         // We added a new item
         this.gridSize++;
       }
       this.clearForm();
       this.refreshGrid();
-      Notification.show(`SamplePerson details stored.`, { position: 'bottom-start' });
+      Notification.show(`Person details stored.`, { position: 'bottom-start' });
     } catch (error: any) {
       if (error instanceof EndpointError) {
         Notification.show(`Server error. ${error.message}`, { theme: 'error', position: 'bottom-start' });

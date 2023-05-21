@@ -1,49 +1,9 @@
-vaadin-app-layout[primary-section="navbar"]::part(navbar)::before {
-  background: var(--lumo-base-color) linear-gradient(var(--lumo-contrast-5pct), var(--lumo-contrast-5pct));
-}
-
-vaadin-app-layout[primary-section="drawer"]::part(navbar)::before {
-  background: var(--lumo-base-color);
-}
-
-vaadin-app-layout[primary-section="drawer"]::part(navbar) {
-  box-shadow: 0 1px 0 0 var(--lumo-contrast-10pct);
-}
-
-vaadin-app-layout[primary-section="drawer"]:not([overlay])::part(drawer) {
-  background: var(--lumo-shade-5pct);
-  border: 0;
-  box-shadow: 1px 0 0 0 var(--lumo-contrast-10pct), 1px 0 0 0 var(--lumo-base-color);
-  z-index: 1;
-}
-
-vaadin-drawer-toggle[slot="navbar"] {
-  color: var(--lumo-secondary-text-color);
-}
-
-::part(navbar) {
-  min-height: var(--lumo-size-xl);
-}
-
-::part(drawer) {
-  display: flex;
-  flex-direction: column;
-}
-
-vaadin-scroller[slot="drawer"] {
-  flex: 1;
+vaadin-scroller[slot='drawer'] {
+  flex: auto;
   padding: var(--lumo-space-s);
 }
 
-vaadin-scroller[slot="drawer"][overflow~="top"] {
-  border-top: 1px solid var(--lumo-contrast-10pct);
-}
-
-vaadin-scroller[slot="drawer"][overflow~="bottom"] {
-  border-bottom: 1px solid var(--lumo-contrast-10pct);
-}
-
-[slot="drawer"]:is(header, footer) {
+[slot='drawer']:is(header, footer) {
   display: flex;
   align-items: center;
   gap: var(--lumo-space-s);
@@ -52,6 +12,27 @@ vaadin-scroller[slot="drawer"][overflow~="bottom"] {
   box-sizing: border-box;
 }
 
-[slot="drawer"]:is(header, footer):is(:empty) {
+[slot='drawer']:is(header, footer):is(:empty) {
   display: none;
+}
+
+.navicon {
+  --mask-repeat: no-repeat;
+  --mask-position: 50%;
+  vertical-align: middle;
+  --_size: var(--lumo-icon-size-m);
+
+  mask-image: var(--mask-image);
+  mask-repeat: var(--mask-repeat);
+  mask-position: var(--mask-position);
+
+  width: var(--_size);
+  height: var(--_size);
+  background-color: currentColor;
+  display: inline-block;
+  flex: none;
+
+  -webkit-mask-image: var(--mask-image);
+  -webkit-mask-repeat: var(--mask-repeat);
+  -webkit-mask-position: var(--mask-position);
 }

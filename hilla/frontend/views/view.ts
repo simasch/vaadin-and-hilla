@@ -1,5 +1,5 @@
 import {MobxLitElement} from '@adobe/lit-mobx';
-import {applyTheme} from 'Frontend/generated/theme';
+import {applyTheme} from 'Frontend/generated/theme.js';
 import {autorun, IAutorunOptions, IReactionDisposer, IReactionOptions, IReactionPublic, reaction} from 'mobx';
 
 export class MobxElement extends MobxLitElement {
